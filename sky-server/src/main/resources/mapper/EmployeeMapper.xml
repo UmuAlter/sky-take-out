@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.EmployeeMapper">
-
+<!--分页查询-->
     <select id="pageQurry" resultType="com.sky.entity.Employee">
         select * from employee
         <where>
@@ -12,7 +12,7 @@
         </where>
         order by create_time desc
     </select>
-
+<!--更新操作 对数据库更新，注意使用数据库的字段名-->
     <update id="update" parameterType="com.sky.entity.Employee">
         update employee
         <set>
@@ -21,10 +21,10 @@
             <if test="password != null">password = #{password},</if>
             <if test="phone != null ">phone = #{phone},</if>
             <if test="sex != null">sex = #{sex},</if>
-            <if test="idNumber != null ">idNumber = #{idNumber},</if>
+            <if test="idNumber != null ">id_Number = #{idNumber},</if>
             <if test="status != null">status = #{status},</if>
-            <if test="createTime != null">createTime = #{createTime},</if>
-            <if test="updateTime != null">updateTime = #{updateTime},</if>
+            <if test="updateUser != null">update_User = #{updateUser},</if>
+            <if test="updateTime != null">update_Time = #{updateTime},</if>
         </set>
         where id = #{id}
     </update>
