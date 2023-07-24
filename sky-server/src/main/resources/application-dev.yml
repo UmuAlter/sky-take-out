@@ -1,8 +1,15 @@
 sky:
   datasource:
+    #数据库设置
     driver-class-name: com.mysql.cj.jdbc.Driver
     host: localhost
     port: 3306
     database: sky_take_out
     username: root
     password: Alter1522
+  #阿里云设置
+  alioss:
+    access-key-id:
+    endpoint:
+    access-key-secret:
+    bucket-name:
