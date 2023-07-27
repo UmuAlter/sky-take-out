@@ -19,6 +19,12 @@ spring:
       max-file-size: 2MB
       #一次请求最大限制
       max-request-size: 10MB
+#  redis配置
+  redis:
+    host: ${sky.redis.host}
+    port: ${sky.redis.port}
+    password: ${sky.redis.password}
+    database: ${sky.redis.database}
 
 mybatis:
   #mapper配置文件
