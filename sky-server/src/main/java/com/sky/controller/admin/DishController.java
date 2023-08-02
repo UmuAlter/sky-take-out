@@ -13,10 +13,12 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @Slf4j
@@ -25,6 +27,8 @@ import java.util.List;
 public class DishController {
     @Autowired
     private DishService dishService;
+    @Autowired
+    private RedisTemplate redisTemplate;
     /**
      * 新增菜品
      * @param dishDTO
@@ -36,6 +40,9 @@ public class DishController {
         log.info("新增菜品:{}",dishDTO);
 
         dishService.saveWithFlavor(dishDTO);
+        //清理Redis缓存
+        String key = "dish_" + dishDTO.getCategoryId();
+        redisTemplate.delete(key);
 
         return Result.success();
     }
@@ -72,6 +79,10 @@ public class DishController {
     public Result delete(@RequestParam List<Long> ids){
         log.info("菜品批量删除: {}",ids);
         dishService.deleteBatch(ids);
+        //可能会影响多个Key
+        //删除所有以dish_开头的
+        cleanRedis();
+
         return Result.success();
     }
   /*
@@ -101,6 +112,9 @@ public class DishController {
     public Result update(@RequestBody DishDTO dishDTO){
         log.info("更新菜品");
         dishService.updateWithFlavor(dishDTO);
+
+        cleanRedis();
+
         return Result.success();
     }
 
@@ -115,6 +129,9 @@ public class DishController {
     public Result startOrStop(Long id ,@PathVariable Integer status ){
         log.info("菜品{}的起售停售：{}",id,status);
         dishService.startOrStop(id,status);
+
+        cleanRedis();
+
         return Result.success();
     }
 
@@ -129,5 +146,13 @@ public class DishController {
         log.info("根据分类Id查询菜品:{}",categoryId);
         List<Dish> dishes = dishService.list(categoryId);
         return Result.success(dishes);
+    }
+
+    //清空所有Redis缓存
+    private void cleanRedis() {
+
+        Set keys = redisTemplate.keys("dish_*");
+        redisTemplate.delete(keys);
+
     }
 }

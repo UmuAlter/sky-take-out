@@ -33,6 +33,7 @@ public class HttpClientUtil {
      * @param paramMap
      * @return
      */
+//    UserServiceImpl调用了
     public static String doGet(String url,Map<String,String> paramMap){
         // 创建Httpclient对象
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -57,6 +58,7 @@ public class HttpClientUtil {
 
             //判断响应状态
             if(response.getStatusLine().getStatusCode() == 200){
+                //转字符串并设置编码格式
                 result = EntityUtils.toString(response.getEntity(),"UTF-8");
             }
         }catch (Exception e){
