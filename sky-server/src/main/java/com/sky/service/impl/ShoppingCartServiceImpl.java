@@ -12,6 +12,7 @@ import com.sky.service.ShoppingCartService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +29,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
      * 添加购物车
      * @param shoppingCartDTO
      */
-    @Override
+    @Transactional
     public void addShoppingCart(ShoppingCartDTO shoppingCartDTO) {
         //判断有购物车中有没有重复的菜品
         ShoppingCart shoppingCart = new ShoppingCart();
