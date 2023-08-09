@@ -72,3 +72,7 @@ sky:
     weChatPayCertFilePath: ${sky.wechat.weChatPayCertFilePath}
     notifyUrl: ${sky.wechat.notifyUrl}
     refundNotifyUrl: ${sky.wechat.refundNotifyUrl}
+  baidu:
+    ak: FzVOHrcl1mCTfe04IHbkLAbUx99gHQd7
+  shop:
+    address: 北京市海淀区上帝十街十号

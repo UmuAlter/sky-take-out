@@ -1,5 +1,7 @@
 package com.sky.mapper;
 
+import com.github.pagehelper.Page;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -26,4 +28,27 @@ public interface OrderMapper {
      * @param orders
      */
     void update(Orders orders);
+
+    /**
+     * 分页查询历史订单记录
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    Page<Orders> pageHistory(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    /**
+     * 根据订单id查询订单详情
+     * @param id
+     * @return
+     */
+    @Select("select * from orders where id = #{id}")
+    Orders getById(Long id);
+
+    /**
+     * 根据状态查询订单数量
+     * @param status
+     * @return
+     */
+    @Select("select count(id) from orders where status = #{status}")
+    Integer countStatus(Integer status);
 }

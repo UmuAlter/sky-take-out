@@ -34,6 +34,7 @@ public class JwtTokenUserInterceptor implements HandlerInterceptor {
      * @return
      * @throws Exception
      */
+    //在请求被处理之前进行拦截和处理
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //System.out.println("当前线程id为: "+Thread.currentThread().getId());
 
@@ -52,7 +53,9 @@ public class JwtTokenUserInterceptor implements HandlerInterceptor {
             log.info("jwt校验:{}", token);
             Claims claims = JwtUtil.parseJWT(jwtProperties.getUserSecretKey(), token);
             //获取了用户id
-            Long userId = Long.valueOf(claims.get(JwtClaimsConstant.USER_ID).toString());
+            Long userId = Long.valueOf(
+                    claims.get(JwtClaimsConstant.USER_ID).toString()
+            );
             log.info("当前用户id：{}", userId);
             //设置线程局部变量
             BaseContext.setCurrentId(userId);

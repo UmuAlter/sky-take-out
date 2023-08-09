@@ -59,10 +59,14 @@ public class AutoFillAspect {
             //getDeclaredMethod获得该类的特定方法 参数为 方法名称 , 方法参数
             try {
                 //获得四个方法
-                Method setCreateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
-                Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
-                Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                Method setCreateTime = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
+                Method setCreateUser = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
+                Method setUpdateTime = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+                Method setUpdateUser = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
 
                 //通过反射对方法对象赋值
                 //entity中的setCreateTime方法，参数为now
@@ -77,8 +81,10 @@ public class AutoFillAspect {
         }else if(value == OperationType.UPDATE){
             //更新操作
             try {
-                Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                Method setUpdateTime = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+                Method setUpdateUser = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
 
                 setUpdateTime.invoke(entity,now);
                 setUpdateUser.invoke(entity,currentId);
