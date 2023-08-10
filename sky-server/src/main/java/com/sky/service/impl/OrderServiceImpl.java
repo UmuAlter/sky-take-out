@@ -21,6 +21,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+ */
 @Service
 public class OrderServiceImpl implements OrderService {
     @Autowired
@@ -50,6 +54,8 @@ public class OrderServiceImpl implements OrderService {
     private UserMapper userMapper;
     @Autowired
     private WeChatPayUtil weChatPayUtil;
+    @Autowired
+    private WebSocketServer webSocketServer;
 
     @Value("${sky.shop.address}")
     private String shopAddress;
@@ -184,6 +190,14 @@ public class OrderServiceImpl implements OrderService {
         where id = #{id}
     </update>
          */
+//支付成功后向管理端发送来单提醒
+    //Map转JSON
+        Map map = new HashMap();
+        map.put("type",1);//1表示来单提醒 2表示用户催单
+        map.put("orderId",ordersDB.getId());
+        map.put("content","订单号： "+outTradeNo);
+        String jsonString = JSON.toJSONString(map);
+        webSocketServer.sendToAllClient(jsonString);
     }
 
     /**
@@ -436,6 +450,24 @@ public class OrderServiceImpl implements OrderService {
                 .deliveryTime(LocalDateTime.now())
                 .build();
         orderMapper.update(build);
+    }
+
+    /**
+     * 客户催单
+     * @param id
+     */
+    public void reminder(Long id) throws Exception{
+        Orders orderDB = orderMapper.getById(id);
+        if(orderDB == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        //向浏览器客户端推送消息
+        Map map = new HashMap();
+        map.put("type",2);//1表示来单提醒 2表示用户催单
+        map.put("orderId",id);
+        map.put("content","订单号： "+orderDB.getNumber());
+        String jsonString = JSON.toJSONString(map);
+        webSocketServer.sendToAllClient(jsonString);
     }
 
     /**
