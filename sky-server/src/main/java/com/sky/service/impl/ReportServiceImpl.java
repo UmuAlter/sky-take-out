@@ -6,22 +6,24 @@ import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.result.Result;
 import com.sky.service.ReportService;
-import com.sky.vo.OrderReportVO;
-import com.sky.vo.SalesTop10ReportVO;
-import com.sky.vo.TurnoverReportVO;
-import com.sky.vo.UserReportVO;
+import com.sky.service.WorkspaceService;
+import com.sky.vo.*;
 import io.swagger.models.auth.In;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +32,8 @@ public class ReportServiceImpl implements ReportService {
     private OrderMapper orderMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private WorkspaceService workspaceService;
     /**
      * 获取营业额数据统计
      * //营业额为订单状态为已完成的订单
@@ -174,6 +178,69 @@ public class ReportServiceImpl implements ReportService {
                 .nameList(nameList)
                 .numberList(numberList)
                 .build();
+    }
+
+    /**
+     * 导出运营数据表
+     * @param response
+     */
+    public void exportBusinessData(HttpServletResponse response) {
+        //查询数据库，获得运营数据
+        //距离今天最近的30天
+        LocalDate dateBegin = LocalDate.now().minusDays(30);
+        //昨天
+        LocalDate dateEnd = LocalDate.now().minusDays(1);
+        //获得近30天运营数据
+        BusinessDataVO businessDataVO = workspaceService.getBusinessData(
+                LocalDateTime.of(dateBegin, LocalTime.MIN),
+                LocalDateTime.of(dateEnd, LocalTime.MAX)
+        );
+        //将数据写入excel文件
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream("template/modu.xlsx");
+        try {
+            //基于模板创建一个新的excel文件
+            XSSFWorkbook excel = new XSSFWorkbook(in);
+            //获取标签页
+            XSSFSheet sheet = excel.getSheetAt(0);
+            //获取行-获取单元格-填充数据( time )
+            sheet.getRow(1)
+                    .getCell(1)
+                    .setCellValue("时间 从" + dateBegin + "到" + dateEnd);
+            //第四行
+            XSSFRow row = sheet.getRow(3);
+            row.getCell(2).setCellValue(businessDataVO.getTurnover());
+            row.getCell(4).setCellValue(businessDataVO.getOrderCompletionRate());
+            row.getCell(6).setCellValue(businessDataVO.getNewUsers());
+            //第五行
+            row = sheet.getRow(4);
+            row.getCell(2).setCellValue(businessDataVO.getValidOrderCount());//有效订单
+            row.getCell(4).setCellValue(businessDataVO.getUnitPrice());     //平均客单价
+
+            //填充明细数据
+            for(int i=0;i<30;i++){
+                LocalDate date = dateBegin.plusDays(i);
+                //查询某一天营业额
+                BusinessDataVO businessData = workspaceService.getBusinessData(
+                        LocalDateTime.of(dateBegin, LocalTime.MIN),
+                        LocalDateTime.of(dateEnd, LocalTime.MAX)
+                );
+                row = sheet.getRow(7+i);
+                row.getCell(1).setCellValue(date.toString());
+                row.getCell(2).setCellValue(businessDataVO.getTurnover());
+                row.getCell(3).setCellValue(businessDataVO.getValidOrderCount());
+                row.getCell(4).setCellValue(businessDataVO.getOrderCompletionRate());
+                row.getCell(5).setCellValue(businessDataVO.getUnitPrice());
+                row.getCell(6).setCellValue(businessDataVO.getNewUsers());
+            }
+        //通过输出流将excel文件下载到客户端浏览器
+            ServletOutputStream outputStream = response.getOutputStream();
+            excel.write(outputStream);//效果为弹出保存对话框，可以下载文件
+
+            outputStream.close();
+            excel.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
