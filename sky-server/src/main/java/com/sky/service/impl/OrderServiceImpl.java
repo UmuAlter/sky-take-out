@@ -421,7 +421,7 @@ public class OrderServiceImpl implements OrderService {
      * 派送订单
      * @param id
      */
-    public void delivery(Long id) throws Exception {
+    public void delivery(Long id) {
         Orders orders = orderMapper.getById(id);
         //检查订单状态
         if(orders == null || !orders.getStatus().equals(Orders.CONFIRMED)){
@@ -439,7 +439,7 @@ public class OrderServiceImpl implements OrderService {
      * 完成订单
      * @param id
      */
-    public void complete(Long id) throws Exception {
+    public void complete(Long id) {
         Orders orders = orderMapper.getById(id);
         if(orders == null || !orders.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)){
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
@@ -456,7 +456,7 @@ public class OrderServiceImpl implements OrderService {
      * 客户催单
      * @param id
      */
-    public void reminder(Long id) throws Exception{
+    public void reminder(Long id){
         Orders orderDB = orderMapper.getById(id);
         if(orderDB == null){
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);

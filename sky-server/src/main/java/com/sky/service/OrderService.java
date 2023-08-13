@@ -91,17 +91,17 @@ public interface OrderService {
      * 派送订单
      * @param id
      */
-    void delivery(Long id) throws Exception;
+    void delivery(Long id);
 
     /**
      * 完成订单
      * @param id
      */
-    void complete(Long id) throws Exception;
+    void complete(Long id);
 
     /**
      * 客户催单
      * @param id
      */
-    void reminder(Long id) throws Exception;
+    void reminder(Long id);
 }

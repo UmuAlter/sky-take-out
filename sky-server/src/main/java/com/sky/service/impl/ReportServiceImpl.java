@@ -4,11 +4,9 @@ import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
-import com.sky.result.Result;
 import com.sky.service.ReportService;
 import com.sky.service.WorkspaceService;
 import com.sky.vo.*;
-import io.swagger.models.auth.In;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -84,7 +82,7 @@ public class ReportServiceImpl implements ReportService {
     public UserReportVO getUserStatistics(LocalDate begin, LocalDate end) {
         List<LocalDate> dateList = new ArrayList<>();
         dateList.add(begin);
-        while (begin != end){
+        while (!begin.equals(end)){
             begin = begin.plusDays(1);
             dateList.add(begin);
         }
@@ -99,10 +97,10 @@ public class ReportServiceImpl implements ReportService {
             Map map = new HashMap();
             map.put("end",endTime);
             //查截至当天总的用户数
-            Integer addUser =  userMapper.countByMap(map);
+            Integer totalUser =  userMapper.countByMap(map);
             map.put("begin",beginTime);
             //查当天新增用户数
-            Integer totalUser = userMapper.countByMap(map);
+            Integer addUser = userMapper.countByMap(map);
 
             addUsers.add(addUser);
             totalUsers.add(totalUser);
@@ -123,26 +121,29 @@ public class ReportServiceImpl implements ReportService {
     public OrderReportVO getOrderStatistics(LocalDate begin, LocalDate end) {
         List<LocalDate> dateList = new ArrayList<>();
         dateList.add(begin);
-        while (begin != end){
+        while (!begin.equals(end)){
             begin = begin.plusDays(1);
             dateList.add(begin);
         }
 
         List<Integer> totalOrderList = new ArrayList<>();   //总订单
-        List<Integer> usefullList = new ArrayList<>();      //有效订单
+        List<Integer> vaildOrderCountList = new ArrayList<>();      //有效订单
 
         for (LocalDate date : dateList) {
             LocalDateTime beginTime = LocalDateTime.of(date,LocalTime.MIN);
             LocalDateTime endTime = LocalDateTime.of(date,LocalTime.MAX);
 
+            Integer countOrder = countOrders(beginTime, endTime, null);
             //查询每天订单总数
-            totalOrderList.add(countOrders(beginTime,endTime,null));
+            totalOrderList.add(countOrder);
             //查询每天有效订单数
-            usefullList.add(countOrders(beginTime,endTime,Orders.COMPLETED));
+            vaildOrderCountList.add(
+                    countOrders(beginTime,endTime,Orders.COMPLETED)
+            );
         }
         //对List中的数据求和
         Integer totalOrderCount = totalOrderList.stream().reduce(Integer::sum).get();
-        Integer validOrderCount = usefullList.stream().reduce(Integer::sum).get();
+        Integer validOrderCount = vaildOrderCountList.stream().reduce(Integer::sum).get();
         //计算订单完成率
         Double orderCompleteRate =0.0;
         if(totalOrderCount != 0){
@@ -151,7 +152,7 @@ public class ReportServiceImpl implements ReportService {
         return OrderReportVO.builder()
                 .dateList(StringUtils.join(dateList,","))
                 .orderCountList(StringUtils.join(totalOrderList,","))
-                .validOrderCountList(StringUtils.join(usefullList,","))
+                .validOrderCountList(StringUtils.join(vaildOrderCountList,","))
                 .totalOrderCount(totalOrderCount)
                 .validOrderCount(validOrderCount)
                 .orderCompletionRate(orderCompleteRate)
@@ -196,12 +197,12 @@ public class ReportServiceImpl implements ReportService {
                 LocalDateTime.of(dateEnd, LocalTime.MAX)
         );
         //将数据写入excel文件
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("template/modu.xlsx");
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream("template/运营数据报表模板.xlsx");
         try {
             //基于模板创建一个新的excel文件
             XSSFWorkbook excel = new XSSFWorkbook(in);
             //获取标签页
-            XSSFSheet sheet = excel.getSheetAt(0);
+            XSSFSheet sheet = excel.getSheet("Sheet1");
             //获取行-获取单元格-填充数据( time )
             sheet.getRow(1)
                     .getCell(1)
@@ -226,11 +227,11 @@ public class ReportServiceImpl implements ReportService {
                 );
                 row = sheet.getRow(7+i);
                 row.getCell(1).setCellValue(date.toString());
-                row.getCell(2).setCellValue(businessDataVO.getTurnover());
-                row.getCell(3).setCellValue(businessDataVO.getValidOrderCount());
-                row.getCell(4).setCellValue(businessDataVO.getOrderCompletionRate());
-                row.getCell(5).setCellValue(businessDataVO.getUnitPrice());
-                row.getCell(6).setCellValue(businessDataVO.getNewUsers());
+                row.getCell(2).setCellValue(businessData.getTurnover());
+                row.getCell(3).setCellValue(businessData.getValidOrderCount());
+                row.getCell(4).setCellValue(businessData.getOrderCompletionRate());
+                row.getCell(5).setCellValue(businessData.getUnitPrice());
+                row.getCell(6).setCellValue(businessData.getNewUsers());
             }
         //通过输出流将excel文件下载到客户端浏览器
             ServletOutputStream outputStream = response.getOutputStream();

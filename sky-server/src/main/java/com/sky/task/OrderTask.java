@@ -24,7 +24,7 @@ public class OrderTask {
      * 每分钟触发一次
      * 超过15分钟未付款处理
      */
-    @Scheduled(cron = "0 * * * * ? *")
+    @Scheduled(cron = "0 * * * * ? ")
     //@Scheduled(cron = "0/5 * * * * ?")
     public void processTimeOutOrder(){
         log.info("处理超时订单:{}", LocalDateTime.now());
@@ -49,7 +49,7 @@ public class OrderTask {
      * 查上一个工作日
      */
     //@Scheduled(cron = "1/5 * * * * ?")
-    @Scheduled(cron = "0 0 1 * * ? *")
+    @Scheduled(cron = "0 0 1 * * ? ")
     public void processDeliveryOrder(){
         log.info("处理一直派送中的订单：{}",LocalDateTime.now());
 

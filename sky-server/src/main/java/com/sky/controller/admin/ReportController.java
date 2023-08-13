@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalTime;
-
+/**
+ * 数据统计相关接口
+ */
 @RestController
 @Slf4j
 @RequestMapping("/admin/report")
